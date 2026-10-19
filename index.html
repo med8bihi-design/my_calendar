@@ -31,7 +31,53 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-    .header {
+    .top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .action-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn:hover { background: #e2e8f0; }
+    .btn-save {
+      background: #10b981;
+      color: #fff;
+      border-color: #059669;
+    }
+    .btn-save:hover { background: #059669; }
+    .btn-today {
+      background: #e0e7ff;
+      color: #3730a3;
+      border-color: #c7d2fe;
+    }
+    .btn-today:hover { background: #c7d2fe; }
+    .save-status {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #10b981;
+      min-width: 90px;
+    }
+    .nav-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -43,13 +89,29 @@
       background: var(--primary);
       color: #fff;
       border: none;
-      padding: 8px 16px;
+      padding: 8px 14px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
       font-size: 0.9rem;
     }
     .nav-btn:hover { background: #1d4ed8; }
+    .jump-picker {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+    .select-input {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: #fff;
+      color: #1e293b;
+      cursor: pointer;
+    }
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -107,6 +169,10 @@
       border: none;
       cursor: default;
     }
+    .day-cell.today-marker {
+      box-shadow: 0 0 0 2px #2563eb inset;
+      background: #eff6ff;
+    }
     .day-cell.is-holiday {
       border-top: 3px solid var(--official-holiday);
       background: #faf5ff;
@@ -119,9 +185,22 @@
       background: #fee2e2 !important;
       border-color: var(--leave-taken);
     }
+    .date-badge-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     .date-num {
       font-weight: 700;
       font-size: 0.95rem;
+    }
+    .today-pill {
+      font-size: 0.6rem;
+      background: #2563eb;
+      color: #fff;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: bold;
     }
     .holiday-badge {
       font-size: 0.65rem;
@@ -143,14 +222,8 @@
       font-weight: 700;
       line-height: 1.2;
     }
-    .tag-worked {
-      background: var(--holiday-worked);
-      color: #fff;
-    }
-    .tag-leave {
-      background: var(--leave-taken);
-      color: #fff;
-    }
+    .tag-worked { background: var(--holiday-worked); color: #fff; }
+    .tag-leave { background: var(--leave-taken); color: #fff; }
     .legend {
       display: flex;
       gap: 16px;
@@ -159,16 +232,8 @@
       justify-content: center;
       flex-wrap: wrap;
     }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .box {
-      width: 14px;
-      height: 14px;
-      border-radius: 3px;
-    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .box { width: 14px; height: 14px; border-radius: 3px; }
     .summary-section {
       margin-top: 36px;
       border-top: 2px solid #e2e8f0;
@@ -182,11 +247,7 @@
       gap: 12px;
       margin-bottom: 16px;
     }
-    .filter-btn-group {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .filter-btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
     .filter-btn {
       border: 1px solid var(--border);
       background: #fff;
@@ -201,39 +262,44 @@
       color: #fff;
       border-color: var(--primary);
     }
-    .summary-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
+    .summary-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     .summary-table th, .summary-table td {
       border: 1px solid var(--border);
       padding: 8px 10px;
       text-align: left;
     }
-    .summary-table th {
-      background: #f1f5f9;
-      font-weight: 600;
-    }
-    .empty-msg {
-      text-align: center;
-      color: #94a3b8;
-      padding: 20px;
-    }
+    .summary-table th { background: #f1f5f9; font-weight: 600; }
+    .empty-msg { text-align: center; color: #94a3b8; padding: 20px; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="header">
+  <!-- Top Utility & Backup Bar -->
+  <div class="top-actions">
+    <div class="action-group">
+      <button class="btn btn-save" onclick="manualSave()">💾 Enregistrer / حفظ</button>
+      <span class="save-status" id="save-indicator"></span>
+    </div>
+    <div class="action-group">
+      <button class="btn btn-today" onclick="goToToday()">📍 Aujourd'hui / اليوم</button>
+      <button class="btn" onclick="exportData()">📤 Exporter (Backup)</button>
+      <button class="btn" onclick="document.getElementById('file-importer').click()">📥 Importer</button>
+      <input type="file" id="file-importer" style="display:none;" accept=".json" onchange="importData(event)">
+    </div>
+  </div>
+
+  <!-- Easy Navigation / Jump Bar -->
+  <div class="nav-bar">
     <button class="nav-btn" onclick="changeMonth(-1)">&larr; Préc. / السابق</button>
-    <div style="text-align: center;">
-      <h2 id="calendar-title" style="margin: 0; font-size: 1.25rem;">Calendrier</h2>
-      <small style="color: #64748b;">Cliquer : Normal &rarr; Férié travaillé (+1) &rarr; Congé pris (-1) &rarr; Normal</small>
+    <div class="jump-picker">
+      <select id="select-month" class="select-input" onchange="onSelectorJump()"></select>
+      <select id="select-year" class="select-input" onchange="onSelectorJump()"></select>
     </div>
     <button class="nav-btn" onclick="changeMonth(1)">Suiv. / التالي &rarr;</button>
   </div>
 
+  <!-- Stats Grid -->
   <div class="stats-bar">
     <div class="stat-card">
       <h4>Solde Annuel Acquis<br>رصيد العطل المكتسب</h4>
@@ -254,12 +320,16 @@
     </div>
   </div>
 
+  <!-- Calendar Elements -->
   <div class="calendar-grid" id="weekdays"></div>
   <div class="calendar-grid" id="calendar-days" style="margin-top: 6px;"></div>
 
   <div class="legend">
     <div class="legend-item">
       <span class="box" style="background: #fff; border: 1px solid var(--border);"></span> Normal / عادي
+    </div>
+    <div class="legend-item">
+      <span class="box" style="background: #eff6ff; border: 2px solid #2563eb;"></span> Aujourd'hui / اليوم
     </div>
     <div class="legend-item">
       <span class="box" style="background: #f3e8ff; border-top: 2px solid var(--official-holiday);"></span> Jour Férié Officiel / عيد رسمي
@@ -272,6 +342,7 @@
     </div>
   </div>
 
+  <!-- Summary Section -->
   <div class="summary-section">
     <div class="summary-header">
       <h3 style="margin: 0; font-size: 1.1rem;">
@@ -358,11 +429,12 @@
     "2027-08-15": { fr: "Aïd Al-Mawlid Annabawi", ar: "عيد المولد النبوي" }
   };
 
+  // Always initializes to current real date
+  const realToday = new Date();
   let currentDate = new Date();
   let currentFilter = "all";
   let calendarData = {};
 
-  // Safe localStorage loading (prevents security errors from adblockers)
   try {
     const saved = localStorage.getItem("work_leave_tracker");
     if (saved) calendarData = JSON.parse(saved);
@@ -370,12 +442,90 @@
     console.warn("Storage warning:", err);
   }
 
-  function saveStorage() {
+  function saveStorage(notify = false) {
     try {
       localStorage.setItem("work_leave_tracker", JSON.stringify(calendarData));
+      if (notify) {
+        const ind = document.getElementById("save-indicator");
+        ind.textContent = "✓ Enregistré ! / تم الحفظ";
+        setTimeout(() => { ind.textContent = ""; }, 2500);
+      }
     } catch (err) {
-      console.warn("Could not save to localStorage:", err);
+      console.warn("Storage warning:", err);
     }
+  }
+
+  function manualSave() {
+    saveStorage(true);
+  }
+
+  function exportData() {
+    const blob = new Blob([JSON.stringify(calendarData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `calendar-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (typeof parsed === "object") {
+          calendarData = parsed;
+          saveStorage(true);
+          renderCalendar();
+          alert("Données importées avec succès ! / تم استيراد البيانات بنجاح");
+        }
+      } catch (err) {
+        alert("Fichier non valide / ملف غير صالح");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function goToToday() {
+    currentDate = new Date();
+    populateJumpSelects();
+    renderCalendar();
+  }
+
+  function populateJumpSelects() {
+    const mSelect = document.getElementById("select-month");
+    const ySelect = document.getElementById("select-year");
+    mSelect.innerHTML = "";
+    ySelect.innerHTML = "";
+
+    months.forEach((m, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = `${m.fr} / ${m.ar}`;
+      mSelect.appendChild(opt);
+    });
+
+    const activeYear = currentDate.getFullYear();
+    for (let y = activeYear - 5; y <= activeYear + 5; y++) {
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = y;
+      ySelect.appendChild(opt);
+    }
+
+    mSelect.value = currentDate.getMonth();
+    ySelect.value = currentDate.getFullYear();
+  }
+
+  function onSelectorJump() {
+    const m = parseInt(document.getElementById("select-month").value, 10);
+    const y = parseInt(document.getElementById("select-year").value, 10);
+    currentDate.setFullYear(y);
+    currentDate.setMonth(m);
+    renderCalendar();
   }
 
   function getHoliday(year, monthStr, dayStr) {
@@ -426,7 +576,7 @@
     } else {
       delete calendarData[dateKey];
     }
-    saveStorage();
+    saveStorage(false);
     renderCalendar();
   }
 
@@ -441,9 +591,11 @@
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
-    const title = document.getElementById("calendar-title");
-    if (title) title.innerHTML = `${months[month].fr} / ${months[month].ar} ${year}`;
-    
+    const mSelect = document.getElementById("select-month");
+    const ySelect = document.getElementById("select-year");
+    if (mSelect) mSelect.value = month;
+    if (ySelect) ySelect.value = year;
+
     const summaryYear = document.getElementById("summary-year");
     if (summaryYear) summaryYear.textContent = year;
 
@@ -460,6 +612,9 @@
       grid.appendChild(emptyCell);
     }
 
+    const isCurrentYear = (realToday.getFullYear() === year);
+    const isCurrentMonth = (realToday.getMonth() === month);
+
     for (let day = 1; day <= daysInMonth; day++) {
       const cell = document.createElement("div");
       cell.className = "day-cell";
@@ -467,6 +622,9 @@
       const formattedMonth = String(month + 1).padStart(2, "0");
       const formattedDay = String(day).padStart(2, "0");
       const dateKey = `${year}-${formattedMonth}-${formattedDay}`;
+
+      const isToday = isCurrentYear && isCurrentMonth && (realToday.getDate() === day);
+      if (isToday) cell.classList.add("today-marker");
 
       const holiday = getHoliday(year, formattedMonth, formattedDay);
       if (holiday) cell.classList.add("is-holiday");
@@ -488,7 +646,10 @@
 
       cell.innerHTML = `
         <div>
-          <div class="date-num">${day}</div>
+          <div class="date-badge-box">
+            <span class="date-num">${day}</span>
+            ${isToday ? '<span class="today-pill">Aujourd\'hui</span>' : ''}
+          </div>
           ${holidayTag}
         </div>
         ${statusTag}
@@ -578,9 +739,9 @@
     renderCalendar();
   }
 
-  // Start app safely
   function startApp() {
     initHeader();
+    populateJumpSelects();
     renderCalendar();
   }
 
