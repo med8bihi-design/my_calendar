@@ -10,6 +10,7 @@
       --holiday-worked: #f59e0b;
       --leave-taken: #ef4444;
       --official-holiday: #8b5cf6;
+      --note-color: #0284c7;
       --bg: #f8fafc;
       --card-bg: #ffffff;
       --text: #1e293b;
@@ -151,7 +152,7 @@
       line-height: 1.2;
     }
     .day-cell {
-      min-height: 85px;
+      min-height: 95px;
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 6px;
@@ -162,6 +163,7 @@
       cursor: pointer;
       user-select: none;
       transition: background 0.15s, border-color 0.15s;
+      position: relative;
     }
     .day-cell:hover { background: #f8fafc; }
     .day-cell.empty {
@@ -193,6 +195,37 @@
     .date-num {
       font-weight: 700;
       font-size: 0.95rem;
+    }
+    .cell-top-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .note-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0 2px;
+      opacity: 0.55;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .note-btn:hover {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+    .note-badge {
+      background: #fef9c3;
+      border: 1px dashed #ca8a04;
+      color: #854d0e;
+      font-size: 0.65rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      margin-top: 3px;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .today-pill {
       font-size: 0.6rem;
@@ -270,6 +303,47 @@
     }
     .summary-table th { background: #f1f5f9; font-weight: 600; }
     .empty-msg { text-align: center; color: #94a3b8; padding: 20px; }
+
+    /* Modal Styling */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 90%;
+      max-width: 440px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-title {
+      margin: 0 0 12px 0;
+      font-size: 1.05rem;
+      color: #0f172a;
+    }
+    .modal-textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
@@ -340,6 +414,9 @@
     <div class="legend-item">
       <span class="box" style="background: var(--leave-taken);"></span> Congé pris (-1) / عطلة مستهلكة (-1)
     </div>
+    <div class="legend-item">
+      <span class="box" style="background: #fef9c3; border: 1px dashed #ca8a04;"></span> Note / ملاحظة
+    </div>
   </div>
 
   <!-- Summary Section -->
@@ -352,6 +429,7 @@
         <button class="filter-btn active" onclick="setFilter('all', this)">Tous / الكل</button>
         <button class="filter-btn" onclick="setFilter('worked-holiday', this)">Fériés Travaillés (+1) / مشتغلة</button>
         <button class="filter-btn" onclick="setFilter('leave-taken', this)">Congés Pris (-1) / مستهلكة</button>
+        <button class="filter-btn" onclick="setFilter('has-note', this)">Avec Notes / تحتوي على ملاحظات</button>
         <button class="filter-btn" onclick="setFilter('official-holiday', this)">Fériés Officiels / أعياد رسمية</button>
       </div>
     </div>
@@ -359,13 +437,27 @@
     <table class="summary-table">
       <thead>
         <tr>
-          <th style="width: 25%;">Date / التاريخ</th>
-          <th style="width: 45%;">Événement / الحدث</th>
-          <th style="width: 30%;">Statut / التأثير</th>
+          <th style="width: 20%;">Date / التاريخ</th>
+          <th style="width: 30%;">Événement / الحدث</th>
+          <th style="width: 25%;">Statut / التأثير</th>
+          <th style="width: 25%;">Note / الملاحظة</th>
         </tr>
       </thead>
       <tbody id="summary-body"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal-overlay" id="note-modal">
+  <div class="modal-box">
+    <h4 class="modal-title" id="note-modal-title">Ajouter une Note / إضافة ملاحظة</h4>
+    <textarea id="note-text" class="modal-textarea" placeholder="Écrire votre remarque ici... / اكتب ملاحظتك هنا..."></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="deleteNote()" style="color:#ef4444; margin-right:auto;">Supprimer / حذف</button>
+      <button class="btn" onclick="closeModal()">Annuler / إلغاء</button>
+      <button class="btn btn-save" onclick="saveNote()">Enregistrer / حفظ</button>
+    </div>
   </div>
 </div>
 
@@ -429,15 +521,27 @@
     "2027-08-15": { fr: "Aïd Al-Mawlid Annabawi", ar: "عيد المولد النبوي" }
   };
 
-  // Always initializes to current real date
   const realToday = new Date();
   let currentDate = new Date();
   let currentFilter = "all";
+  
+  // Storage structure: { [dateKey]: { status: "worked-holiday"|"leave-taken"|null, note: string|null } }
   let calendarData = {};
+  let activeModalDate = null;
 
   try {
     const saved = localStorage.getItem("work_leave_tracker");
-    if (saved) calendarData = JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Migrate older string format to object structure if necessary
+      Object.keys(parsed).forEach(k => {
+        if (typeof parsed[k] === "string") {
+          calendarData[k] = { status: parsed[k], note: "" };
+        } else {
+          calendarData[k] = parsed[k];
+        }
+      });
+    }
   } catch (err) {
     console.warn("Storage warning:", err);
   }
@@ -477,7 +581,14 @@
       try {
         const parsed = JSON.parse(e.target.result);
         if (typeof parsed === "object") {
-          calendarData = parsed;
+          calendarData = {};
+          Object.keys(parsed).forEach(k => {
+            if (typeof parsed[k] === "string") {
+              calendarData[k] = { status: parsed[k], note: "" };
+            } else {
+              calendarData[k] = parsed[k];
+            }
+          });
           saveStorage(true);
           renderCalendar();
           alert("Données importées avec succès ! / تم استيراد البيانات بنجاح");
@@ -554,8 +665,9 @@
 
     Object.keys(calendarData).forEach(key => {
       if (key.startsWith(year.toString())) {
-        if (calendarData[key] === "worked-holiday") bonusDays += 1;
-        if (calendarData[key] === "leave-taken") takenDays += 1;
+        const item = calendarData[key];
+        if (item && item.status === "worked-holiday") bonusDays += 1;
+        if (item && item.status === "leave-taken") takenDays += 1;
       }
     });
 
@@ -568,15 +680,65 @@
   }
 
   function toggleDayStatus(dateKey) {
-    const current = calendarData[dateKey];
-    if (!current) {
-      calendarData[dateKey] = "worked-holiday";
-    } else if (current === "worked-holiday") {
-      calendarData[dateKey] = "leave-taken";
+    if (!calendarData[dateKey]) {
+      calendarData[dateKey] = { status: "worked-holiday", note: "" };
+    } else if (calendarData[dateKey].status === "worked-holiday") {
+      calendarData[dateKey].status = "leave-taken";
+    } else if (calendarData[dateKey].status === "leave-taken") {
+      calendarData[dateKey].status = null;
+      if (!calendarData[dateKey].note) {
+        delete calendarData[dateKey];
+      }
     } else {
-      delete calendarData[dateKey];
+      calendarData[dateKey].status = "worked-holiday";
     }
     saveStorage(false);
+    renderCalendar();
+  }
+
+  /* Note Modal Operations */
+  function openNoteModal(dateKey, e) {
+    if (e) e.stopPropagation();
+    activeModalDate = dateKey;
+    const existing = calendarData[dateKey]?.note || "";
+    document.getElementById("note-text").value = existing;
+    document.getElementById("note-modal-title").textContent = `Note : ${dateKey} / ملاحظة`;
+    document.getElementById("note-modal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("note-modal").style.display = "none";
+    activeModalDate = null;
+  }
+
+  function saveNote() {
+    if (!activeModalDate) return;
+    const text = document.getElementById("note-text").value.trim();
+    if (!calendarData[activeModalDate]) {
+      calendarData[activeModalDate] = { status: null, note: text };
+    } else {
+      calendarData[activeModalDate].note = text;
+    }
+
+    if (!calendarData[activeModalDate].status && !calendarData[activeModalDate].note) {
+      delete calendarData[activeModalDate];
+    }
+
+    saveStorage(true);
+    closeModal();
+    renderCalendar();
+  }
+
+  function deleteNote() {
+    if (!activeModalDate) return;
+    if (calendarData[activeModalDate]) {
+      calendarData[activeModalDate].note = "";
+      if (!calendarData[activeModalDate].status) {
+        delete calendarData[activeModalDate];
+      }
+    }
+    saveStorage(true);
+    closeModal();
     renderCalendar();
   }
 
@@ -629,7 +791,10 @@
       const holiday = getHoliday(year, formattedMonth, formattedDay);
       if (holiday) cell.classList.add("is-holiday");
 
-      const status = calendarData[dateKey];
+      const entry = calendarData[dateKey];
+      const status = entry?.status;
+      const note = entry?.note;
+
       let statusTag = "";
       if (status === "worked-holiday") {
         cell.classList.add("worked-holiday");
@@ -644,13 +809,22 @@
         holidayTag = `<div class="holiday-badge">${holiday.fr}<br>${holiday.ar}</div>`;
       }
 
+      let notePreview = "";
+      if (note) {
+        notePreview = `<div class="note-badge" title="${note}">📝 ${note}</div>`;
+      }
+
       cell.innerHTML = `
         <div>
           <div class="date-badge-box">
             <span class="date-num">${day}</span>
-            ${isToday ? '<span class="today-pill">Aujourd\'hui</span>' : ''}
+            <div class="cell-top-right">
+              ${isToday ? '<span class="today-pill">Aujourd\'hui</span>' : ''}
+              <button class="note-btn" title="Ajouter / Voir une Note" onclick="openNoteModal('${dateKey}', event)">📝</button>
+            </div>
           </div>
           ${holidayTag}
+          ${notePreview}
         </div>
         ${statusTag}
       `;
@@ -671,6 +845,7 @@
 
     let entries = {};
 
+    // 1. Official holidays
     for (let m = 0; m < 12; m++) {
       const mStr = String(m + 1).padStart(2, "0");
       const daysInM = new Date(year, m + 1, 0).getDate();
@@ -683,33 +858,41 @@
             date: fullDate,
             name: `${hol.fr} / ${hol.ar}`,
             type: "official-holiday",
-            tag: '<span style="color:#6b21a8; font-weight:600;">Jour Férié Officiel / عيد رسمي</span>'
+            tag: '<span style="color:#6b21a8; font-weight:600;">Jour Férié Officiel / عيد رسمي</span>',
+            note: ""
           };
         }
       }
     }
 
+    // 2. User logged data
     Object.keys(calendarData).forEach(dateKey => {
       if (dateKey.startsWith(year.toString())) {
-        const status = calendarData[dateKey];
+        const item = calendarData[dateKey];
         const hol = getHoliday(year, dateKey.substring(5, 7), dateKey.substring(8, 10));
         const eventName = hol ? `${hol.fr} / ${hol.ar}` : "Jour Ordinaire / يوم عادي";
 
-        if (status === "worked-holiday") {
-          entries[dateKey] = {
-            date: dateKey,
-            name: eventName,
-            type: "worked-holiday",
-            tag: '<strong style="color:var(--holiday-worked);">+1 Jour (Férié travaillé / مشتغل)</strong>'
-          };
-        } else if (status === "leave-taken") {
-          entries[dateKey] = {
-            date: dateKey,
-            name: eventName,
-            type: "leave-taken",
-            tag: '<strong style="color:var(--leave-taken);">-1 Jour (Congé pris / عطلة)</strong>'
-          };
+        let tag = '<span style="color:#64748b;">Normal / عادي</span>';
+        let type = "normal";
+
+        if (item.status === "worked-holiday") {
+          tag = '<strong style="color:var(--holiday-worked);">+1 Jour (Férié travaillé / مشتغل)</strong>';
+          type = "worked-holiday";
+        } else if (item.status === "leave-taken") {
+          tag = '<strong style="color:var(--leave-taken);">-1 Jour (Congé pris / عطلة)</strong>';
+          type = "leave-taken";
+        } else if (hol) {
+          type = "official-holiday";
+          tag = '<span style="color:#6b21a8; font-weight:600;">Jour Férié Officiel / عيد رسمي</span>';
         }
+
+        entries[dateKey] = {
+          date: dateKey,
+          name: eventName,
+          type: type,
+          tag: tag,
+          note: item.note || ""
+        };
       }
     });
 
@@ -718,19 +901,22 @@
 
     sortedDates.forEach(dateKey => {
       const item = entries[dateKey];
-      if (currentFilter !== "all" && item.type !== currentFilter) return;
+      if (currentFilter === "has-note" && !item.note) return;
+      if (currentFilter !== "all" && currentFilter !== "has-note" && item.type !== currentFilter) return;
+
       count++;
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="font-weight:600;">${item.date}</td>
         <td>${item.name}</td>
         <td>${item.tag}</td>
+        <td style="color: #0369a1;">${item.note || '<span style="color:#cbd5e1;">-</span>'}</td>
       `;
       tbody.appendChild(tr);
     });
 
     if (count === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" class="empty-msg">Aucun enregistrement pour ce filtre / لا توجد بيانات لهذا الفلتر</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Aucun enregistrement pour ce filtre / لا توجد بيانات لهذا الفلتر</td></tr>`;
     }
   }
 
