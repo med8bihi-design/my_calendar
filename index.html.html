@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>Leave & Holiday Tracker / تتبع العطل والإجازات</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --holiday-worked: #f59e0b;
+      --leave-taken: #ef4444;
+      --official-holiday: #8b5cf6;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --border: #cbd5e1;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px 16px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .nav-btn:hover {
+      background: #1d4ed8;
+    }
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #f1f5f9;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+    }
+    .stat-card h4 {
+      margin: 0 0 4px 0;
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.3;
+    }
+    .stat-card p {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #0f172a;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .day-header {
+      text-align: center;
+      font-weight: 600;
+      padding: 8px 2px;
+      font-size: 0.8rem;
+      background: #e2e8f0;
+      border-radius: 4px;
+      line-height: 1.2;
+    }
+    .day-cell {
+      min-height: 90px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #fff;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .day-cell:hover {
+      background: #f8fafc;
+    }
+    .day-cell.empty {
+      background: transparent;
+      border: none;
+      cursor: default;
+    }
+    .day-cell.is-holiday {
+      border-top: 3px solid var(--official-holiday);
+      background: #faf5ff;
+    }
+    .day-cell.worked-holiday {
+      background: #fef3c7 !important;
+      border-color: var(--holiday-worked);
+    }
+    .day-cell.leave-taken {
+      background: #fee2e2 !important;
+      border-color: var(--leave-taken);
+    }
+    .date-num {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .holiday-badge {
+      font-size: 0.65rem;
+      color: #6b21a8;
+      font-weight: 600;
+      line-height: 1.2;
+      background: #f3e8ff;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin-top: 2px;
+      word-break: break-word;
+    }
+    .status-tag {
+      font-size: 0.68rem;
+      padding: 3px 4px;
+      border-radius: 4px;
+      text-align: center;
+      margin-top: 4px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .tag-worked {
+      background: var(--holiday-worked);
+      color: #fff;
+    }
+    .tag-leave {
+      background: var(--leave-taken);
+      color: #fff;
+    }
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 18px;
+      font-size: 0.8rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .box {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+    /* Summary & Table Section */
+    .summary-section {
+      margin-top: 36px;
+      border-top: 2px solid #e2e8f0;
+      padding-top: 24px;
+    }
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .filter-btn-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .filter-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .summary-table th, .summary-table td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    .summary-table th {
+      background: #f1f5f9;
+      font-weight: 600;
+    }
+    .empty-msg {
+      text-align: center;
+      color: #94a3b8;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <button class="nav-btn" onclick="changeMonth(-1)">&larr; Préc. / السابق</button>
+    <div style="text-align: center;">
+      <h2 id="calendar-title" style="margin: 0; font-size: 1.25rem;"></h2>
+      <small style="color: #64748b;">Cliquer : Normal &rarr; Férié travaillé (+1) &rarr; Congé pris (-1) &rarr; Normal</small>
+    </div>
+    <button class="nav-btn" onclick="changeMonth(1)">Suiv. / التالي &rarr;</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <h4>Solde Annuel Acquis<br>رصيد العطل المكتسب</h4>
+      <p id="stat-accrued">18 j</p>
+      <small style="color: #64748b;">(1,5 j × 12 mois)</small>
+    </div>
+    <div class="stat-card" style="border-left-color: var(--holiday-worked);">
+      <h4>Jours Fériés Travaillés (+)<br>أيام الأعياد المشتغلة</h4>
+      <p id="stat-bonus">+0 j</p>
+    </div>
+    <div class="stat-card" style="border-left-color: var(--leave-taken);">
+      <h4>Congés Pris (-)<br>أيام العطل المستهلكة</h4>
+      <p id="stat-taken">-0 j</p>
+    </div>
+    <div class="stat-card" style="border-left-color: #10b981;">
+      <h4>Solde Restant Disponible<br>الرصيد المتبقي المتاح</h4>
+      <p id="stat-balance" style="color: #10b981;">18 j</p>
+    </div>
+  </div>
+
+  <div class="calendar-grid" id="weekdays"></div>
+  <div class="calendar-grid" id="calendar-days" style="margin-top: 6px;"></div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <span class="box" style="background: #fff; border: 1px solid var(--border);"></span> Normal / عادي
+    </div>
+    <div class="legend-item">
+      <span class="box" style="background: #f3e8ff; border-top: 2px solid var(--official-holiday);"></span> Jour Férié Officiel / عيد رسمي
+    </div>
+    <div class="legend-item">
+      <span class="box" style="background: var(--holiday-worked);"></span> Férié travaillé (+1) / عيد مشتغل (+1)
+    </div>
+    <div class="legend-item">
+      <span class="box" style="background: var(--leave-taken);"></span> Congé pris (-1) / عطلة مستهلكة (-1)
+    </div>
+  </div>
+
+  <!-- Filter & Summary Section -->
+  <div class="summary-section">
+    <div class="summary-header">
+      <h3 style="margin: 0; font-size: 1.1rem;">
+        Récapitulatif de l'Année / ملخص السنة (<span id="summary-year"></span>)
+      </h3>
+      <div class="filter-btn-group">
+        <button class="filter-btn active" onclick="setFilter('all', this)">Tous / الكل</button>
+        <button class="filter-btn" onclick="setFilter('worked-holiday', this)">Fériés Travaillés (+1) / مشتغلة</button>
+        <button class="filter-btn" onclick="setFilter('leave-taken', this)">Congés Pris (-1) / مستهلكة</button>
+        <button class="filter-btn" onclick="setFilter('official-holiday', this)">Fériés Officiels / أعياد رسمية</button>
+      </div>
+    </div>
+
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Date / التاريخ</th>
+          <th style="width: 45%;">Événement / الحدث</th>
+          <th style="width: 30%;">Statut / التأثير</th>
+        </tr>
+      </thead>
+      <tbody id="summary-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Weekday and month names (FR / AR)
+  const weekdays = [
+    { fr: "Lun", ar: "الإثنين" },
+    { fr: "Mar", ar: "الثلاثاء" },
+    { fr: "Mer", ar: "الأربعاء" },
+    { fr: "Jeu", ar: "الخميس" },
+    { fr: "Ven", ar: "الجمعة" },
+    { fr: "Sam", ar: "السبت" },
+    { fr: "Dim", ar: "الأحد" }
+  ];
+
+  const months = [
+    { fr: "Janvier", ar: "يناير" },
+    { fr: "Février", ar: "فبراير" },
+    { fr: "Mars", ar: "مارس" },
+    { fr: "Avril", ar: "أبريل" },
+    { fr: "Mai", ar: "ماي" },
+    { fr: "Juin", ar: "يونيو" },
+    { fr: "Juillet", ar: "يوليوز" },
+    { fr: "Août", ar: "غشت" },
+    { fr: "Septembre", ar: "شتنبر" },
+    { fr: "Octobre", ar: "أكتوبر" },
+    { fr: "Novembre", ar: "نونبر" },
+    { fr: "Décembre", ar: "دجنبر" }
+  ];
+
+  // Fixed recurring holidays (MM-DD)
+  const fixedHolidays = {
+    "01-01": { fr: "Nouvel An", ar: "رأس السنة الميلادية" },
+    "01-11": { fr: "Manifeste de l'Indépendance", ar: "تقديم وثيقة الاستقلال" },
+    "01-14": { fr: "Nouvel An Amazigh", ar: "رأس السنة الأمازيغية" },
+    "05-01": { fr: "Fête du Travail", ar: "عيد الشغل" },
+    "07-30": { fr: "Fête du Trône", ar: "عيد العرش" },
+    "08-14": { fr: "Récupération Oued Ed
