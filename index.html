@@ -2,6 +2,7 @@
 <html lang="fr" dir="ltr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leave & Holiday Tracker / تتبع العطل والإجازات</title>
   <style>
     :root {
@@ -14,18 +15,19 @@
       --text: #1e293b;
       --border: #cbd5e1;
     }
+    * { box-sizing: border-box; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 24px 16px;
+      padding: 16px 12px;
     }
     .container {
       max-width: 980px;
       margin: 0 auto;
       background: var(--card-bg);
-      padding: 24px;
+      padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
@@ -34,7 +36,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .nav-btn {
@@ -47,12 +49,10 @@
       font-weight: 600;
       font-size: 0.9rem;
     }
-    .nav-btn:hover {
-      background: #1d4ed8;
-    }
+    .nav-btn:hover { background: #1d4ed8; }
     .stats-bar {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 12px;
       margin-bottom: 24px;
     }
@@ -89,7 +89,7 @@
       line-height: 1.2;
     }
     .day-cell {
-      min-height: 90px;
+      min-height: 85px;
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 6px;
@@ -98,11 +98,10 @@
       justify-content: space-between;
       background: #fff;
       cursor: pointer;
+      user-select: none;
       transition: background 0.15s, border-color 0.15s;
     }
-    .day-cell:hover {
-      background: #f8fafc;
-    }
+    .day-cell:hover { background: #f8fafc; }
     .day-cell.empty {
       background: transparent;
       border: none;
@@ -170,7 +169,6 @@
       height: 14px;
       border-radius: 3px;
     }
-    /* Summary & Table Section */
     .summary-section {
       margin-top: 36px;
       border-top: 2px solid #e2e8f0;
@@ -230,7 +228,7 @@
   <div class="header">
     <button class="nav-btn" onclick="changeMonth(-1)">&larr; Préc. / السابق</button>
     <div style="text-align: center;">
-      <h2 id="calendar-title" style="margin: 0; font-size: 1.25rem;"></h2>
+      <h2 id="calendar-title" style="margin: 0; font-size: 1.25rem;">Calendrier</h2>
       <small style="color: #64748b;">Cliquer : Normal &rarr; Férié travaillé (+1) &rarr; Congé pris (-1) &rarr; Normal</small>
     </div>
     <button class="nav-btn" onclick="changeMonth(1)">Suiv. / التالي &rarr;</button>
@@ -274,7 +272,6 @@
     </div>
   </div>
 
-  <!-- Filter & Summary Section -->
   <div class="summary-section">
     <div class="summary-header">
       <h3 style="margin: 0; font-size: 1.1rem;">
@@ -302,7 +299,6 @@
 </div>
 
 <script>
-  // Weekday and month names (FR / AR)
   const weekdays = [
     { fr: "Lun", ar: "الإثنين" },
     { fr: "Mar", ar: "الثلاثاء" },
@@ -328,11 +324,271 @@
     { fr: "Décembre", ar: "دجنبر" }
   ];
 
-  // Fixed recurring holidays (MM-DD)
   const fixedHolidays = {
     "01-01": { fr: "Nouvel An", ar: "رأس السنة الميلادية" },
     "01-11": { fr: "Manifeste de l'Indépendance", ar: "تقديم وثيقة الاستقلال" },
     "01-14": { fr: "Nouvel An Amazigh", ar: "رأس السنة الأمازيغية" },
     "05-01": { fr: "Fête du Travail", ar: "عيد الشغل" },
     "07-30": { fr: "Fête du Trône", ar: "عيد العرش" },
-    "08-14": { fr: "Récupération Oued Ed
+    "08-14": { fr: "Récupération Oued Ed-Dahab", ar: "ذكرى استرجاع وادي الذهب" },
+    "08-20": { fr: "Révolution du Roi et du Peuple", ar: "ثورة الملك والشعب" },
+    "08-21": { fr: "Fête de la Jeunesse", ar: "عيد الشباب" },
+    "11-06": { fr: "Marche Verte", ar: "ذكرى المسيرة الخضراء" },
+    "11-18": { fr: "Fête de l'Indépendance", ar: "عيد الاستقلال" }
+  };
+
+  const movableHolidays = {
+    "2025-03-31": { fr: "Aïd Al-Fitr (1er jour)", ar: "عيد الفطر (اليوم الأول)" },
+    "2025-04-01": { fr: "Aïd Al-Fitr (2ème jour)", ar: "عيد الفطر (اليوم الثاني)" },
+    "2025-06-07": { fr: "Aïd Al-Adha (1er jour)", ar: "عيد الأضحى (اليوم الأول)" },
+    "2025-06-08": { fr: "Aïd Al-Adha (2ème jour)", ar: "عيد الأضحى (اليوم الثاني)" },
+    "2025-06-27": { fr: "1er Moharram (Nouvel An Hégirien)", ar: "فاتح محرم (رأس السنة الهجرية)" },
+    "2025-09-05": { fr: "Aïd Al-Mawlid Annabawi", ar: "عيد المولد النبوي" },
+    "2026-03-20": { fr: "Aïd Al-Fitr (1er jour)", ar: "عيد الفطر (اليوم الأول)" },
+    "2026-03-21": { fr: "Aïd Al-Fitr (2ème jour)", ar: "عيد الفطر (اليوم الثاني)" },
+    "2026-05-27": { fr: "Aïd Al-Adha (1er jour)", ar: "عيد الأضحى (اليوم الأول)" },
+    "2026-05-28": { fr: "Aïd Al-Adha (2ème jour)", ar: "عيد الأضحى (اليوم الثاني)" },
+    "2026-06-17": { fr: "1er Moharram (Nouvel An Hégirien)", ar: "فاتح محرم (رأس السنة الهجرية)" },
+    "2026-08-26": { fr: "Aïd Al-Mawlid Annabawi", ar: "عيد المولد النبوي" },
+    "2027-03-09": { fr: "Aïd Al-Fitr (1er jour)", ar: "عيد الفطر (اليوم الأول)" },
+    "2027-03-10": { fr: "Aïd Al-Fitr (2ème jour)", ar: "عيد الفطر (اليوم الثاني)" },
+    "2027-05-17": { fr: "Aïd Al-Adha (1er jour)", ar: "عيد الأضحى (اليوم الأول)" },
+    "2027-05-18": { fr: "Aïd Al-Adha (2ème jour)", ar: "عيد الأضحى (اليوم الثاني)" },
+    "2027-06-07": { fr: "1er Moharram (Nouvel An Hégirien)", ar: "فاتح محرم (رأس السنة الهجرية)" },
+    "2027-08-15": { fr: "Aïd Al-Mawlid Annabawi", ar: "عيد المولد النبوي" }
+  };
+
+  let currentDate = new Date();
+  let currentFilter = "all";
+  let calendarData = {};
+
+  // Safe localStorage loading (prevents security errors from adblockers)
+  try {
+    const saved = localStorage.getItem("work_leave_tracker");
+    if (saved) calendarData = JSON.parse(saved);
+  } catch (err) {
+    console.warn("Storage warning:", err);
+  }
+
+  function saveStorage() {
+    try {
+      localStorage.setItem("work_leave_tracker", JSON.stringify(calendarData));
+    } catch (err) {
+      console.warn("Could not save to localStorage:", err);
+    }
+  }
+
+  function getHoliday(year, monthStr, dayStr) {
+    const fullDate = `${year}-${monthStr}-${dayStr}`;
+    const monthDay = `${monthStr}-${dayStr}`;
+    return movableHolidays[fullDate] || fixedHolidays[monthDay] || null;
+  }
+
+  function initHeader() {
+    const headerRow = document.getElementById("weekdays");
+    if (!headerRow) return;
+    headerRow.innerHTML = "";
+    weekdays.forEach(day => {
+      const col = document.createElement("div");
+      col.className = "day-header";
+      col.innerHTML = `${day.fr}<br><span style="font-size:0.75rem;">${day.ar}</span>`;
+      headerRow.appendChild(col);
+    });
+  }
+
+  function updateStats() {
+    const year = currentDate.getFullYear();
+    const annualAccrual = 1.5 * 12;
+    let bonusDays = 0;
+    let takenDays = 0;
+
+    Object.keys(calendarData).forEach(key => {
+      if (key.startsWith(year.toString())) {
+        if (calendarData[key] === "worked-holiday") bonusDays += 1;
+        if (calendarData[key] === "leave-taken") takenDays += 1;
+      }
+    });
+
+    const netBalance = annualAccrual + bonusDays - takenDays;
+
+    document.getElementById("stat-accrued").textContent = `${annualAccrual} j`;
+    document.getElementById("stat-bonus").textContent = `+${bonusDays} j`;
+    document.getElementById("stat-taken").textContent = `-${takenDays} j`;
+    document.getElementById("stat-balance").textContent = `${netBalance} j`;
+  }
+
+  function toggleDayStatus(dateKey) {
+    const current = calendarData[dateKey];
+    if (!current) {
+      calendarData[dateKey] = "worked-holiday";
+    } else if (current === "worked-holiday") {
+      calendarData[dateKey] = "leave-taken";
+    } else {
+      delete calendarData[dateKey];
+    }
+    saveStorage();
+    renderCalendar();
+  }
+
+  function setFilter(filterType, element) {
+    currentFilter = filterType;
+    document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
+    if (element) element.classList.add("active");
+    renderSummary();
+  }
+
+  function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    const title = document.getElementById("calendar-title");
+    if (title) title.innerHTML = `${months[month].fr} / ${months[month].ar} ${year}`;
+    
+    const summaryYear = document.getElementById("summary-year");
+    if (summaryYear) summaryYear.textContent = year;
+
+    const grid = document.getElementById("calendar-days");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDayIndex; i++) {
+      const emptyCell = document.createElement("div");
+      emptyCell.className = "day-cell empty";
+      grid.appendChild(emptyCell);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const cell = document.createElement("div");
+      cell.className = "day-cell";
+
+      const formattedMonth = String(month + 1).padStart(2, "0");
+      const formattedDay = String(day).padStart(2, "0");
+      const dateKey = `${year}-${formattedMonth}-${formattedDay}`;
+
+      const holiday = getHoliday(year, formattedMonth, formattedDay);
+      if (holiday) cell.classList.add("is-holiday");
+
+      const status = calendarData[dateKey];
+      let statusTag = "";
+      if (status === "worked-holiday") {
+        cell.classList.add("worked-holiday");
+        statusTag = `<div class="status-tag tag-worked">Férié Travaillé (+1)<br>عيد مشتغل</div>`;
+      } else if (status === "leave-taken") {
+        cell.classList.add("leave-taken");
+        statusTag = `<div class="status-tag tag-leave">Congé Pris (-1)<br>عطلة مستهلكة</div>`;
+      }
+
+      let holidayTag = "";
+      if (holiday) {
+        holidayTag = `<div class="holiday-badge">${holiday.fr}<br>${holiday.ar}</div>`;
+      }
+
+      cell.innerHTML = `
+        <div>
+          <div class="date-num">${day}</div>
+          ${holidayTag}
+        </div>
+        ${statusTag}
+      `;
+
+      cell.onclick = () => toggleDayStatus(dateKey);
+      grid.appendChild(cell);
+    }
+
+    updateStats();
+    renderSummary();
+  }
+
+  function renderSummary() {
+    const year = currentDate.getFullYear();
+    const tbody = document.getElementById("summary-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    let entries = {};
+
+    for (let m = 0; m < 12; m++) {
+      const mStr = String(m + 1).padStart(2, "0");
+      const daysInM = new Date(year, m + 1, 0).getDate();
+      for (let d = 1; d <= daysInM; d++) {
+        const dStr = String(d).padStart(2, "0");
+        const fullDate = `${year}-${mStr}-${dStr}`;
+        const hol = getHoliday(year, mStr, dStr);
+        if (hol) {
+          entries[fullDate] = {
+            date: fullDate,
+            name: `${hol.fr} / ${hol.ar}`,
+            type: "official-holiday",
+            tag: '<span style="color:#6b21a8; font-weight:600;">Jour Férié Officiel / عيد رسمي</span>'
+          };
+        }
+      }
+    }
+
+    Object.keys(calendarData).forEach(dateKey => {
+      if (dateKey.startsWith(year.toString())) {
+        const status = calendarData[dateKey];
+        const hol = getHoliday(year, dateKey.substring(5, 7), dateKey.substring(8, 10));
+        const eventName = hol ? `${hol.fr} / ${hol.ar}` : "Jour Ordinaire / يوم عادي";
+
+        if (status === "worked-holiday") {
+          entries[dateKey] = {
+            date: dateKey,
+            name: eventName,
+            type: "worked-holiday",
+            tag: '<strong style="color:var(--holiday-worked);">+1 Jour (Férié travaillé / مشتغل)</strong>'
+          };
+        } else if (status === "leave-taken") {
+          entries[dateKey] = {
+            date: dateKey,
+            name: eventName,
+            type: "leave-taken",
+            tag: '<strong style="color:var(--leave-taken);">-1 Jour (Congé pris / عطلة)</strong>'
+          };
+        }
+      }
+    });
+
+    const sortedDates = Object.keys(entries).sort();
+    let count = 0;
+
+    sortedDates.forEach(dateKey => {
+      const item = entries[dateKey];
+      if (currentFilter !== "all" && item.type !== currentFilter) return;
+      count++;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-weight:600;">${item.date}</td>
+        <td>${item.name}</td>
+        <td>${item.tag}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (count === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" class="empty-msg">Aucun enregistrement pour ce filtre / لا توجد بيانات لهذا الفلتر</td></tr>`;
+    }
+  }
+
+  function changeMonth(delta) {
+    currentDate.setMonth(currentDate.getMonth() + delta);
+    renderCalendar();
+  }
+
+  // Start app safely
+  function startApp() {
+    initHeader();
+    renderCalendar();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startApp);
+  } else {
+    startApp();
+  }
+</script>
+</body>
+</html>
